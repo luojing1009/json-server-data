@@ -80,10 +80,11 @@ const port = process.env.PORT || 3000
 if (process.env.VERCEL) {
   module.exports = server
 } else {
-  // 本地开发环境
-  server.listen(port, () => {
+  // Railway、Render、本地开发环境等
+  server.listen(port, '0.0.0.0', () => {
     console.log(`JSON Server 正在运行在端口 ${port}`)
     console.log(`访问地址: http://localhost:${port}`)
     console.log(`API文档: http://localhost:${port}/monthlyStatistics`)
+    console.log(`环境: ${process.env.NODE_ENV || 'development'}`)
   })
 }
