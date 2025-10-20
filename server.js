@@ -51,6 +51,7 @@ server.use((req, res, next) => {
               projectSum: item.projectSum || '',
             })),
           },
+          message: 'success',
         }
 
         originalSend.call(this, JSON.stringify(wrappedResponse))
@@ -74,8 +75,15 @@ server.use(router)
 
 // 启动服务器
 const port = process.env.PORT || 3000
-server.listen(port, () => {
-  console.log(`JSON Server 正在运行在端口 ${port}`)
-  console.log(`访问地址: http://localhost:${port}`)
-  console.log(`API文档: http://localhost:${port}/monthlyStatistics`)
-})
+
+// 如果在Vercel环境中，导出为serverless函数
+if (process.env.VERCEL) {
+  module.exports = server
+} else {
+  // 本地开发环境
+  server.listen(port, () => {
+    console.log(`JSON Server 正在运行在端口 ${port}`)
+    console.log(`访问地址: http://localhost:${port}`)
+    console.log(`API文档: http://localhost:${port}/monthlyStatistics`)
+  })
+}
