@@ -1,0 +1,98 @@
+name: Deploy JSON Server to GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Create static files
+        run: |
+          mkdir -p dist
+          cp db.json dist/
+          cp package.json dist/
+
+          # 创建简单的HTML页面
+          cat > dist/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>JSON Server Data API</title>
+              <style>
+                  body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                  .endpoint { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+                  .method { font-weight: bold; color: #007acc; }
+                  pre { background: #f0f0f0; padding: 10px; border-radius: 3px; overflow-x: auto; }
+              </style>
+          </head>
+          <body>
+              <h1>JSON Server Data API</h1>
+              <p>欢迎使用基于 json-server 的 RESTful API 接口服务</p>
+              
+              <h2>API 接口列表</h2>
+              
+              <div class="endpoint">
+                  <div class="method">GET</div>
+                  <div><strong>/db.json</strong> - 获取完整数据库</div>
+                  <div><a href="./db.json" target="_blank">点击查看</a></div>
+              </div>
+              
+              <div class="endpoint">
+                  <div class="method">GET</div>
+                  <div><strong>/monthlyStatistics</strong> - 获取所有月度统计数据</div>
+              </div>
+              
+              <div class="endpoint">
+                  <div class="method">GET</div>
+                  <div><strong>/monthlyStatistics/{id}</strong> - 获取指定ID的数据</div>
+              </div>
+              
+              <h2>使用示例</h2>
+              <pre>
+          // 获取所有数据
+          fetch('https://your-username.github.io/json-server-data/db.json')
+            .then(response => response.json())
+            .then(data => console.log(data));
+              </pre>
+              
+              <h2>数据结构</h2>
+              <pre id="data-structure"></pre>
+              
+              <script>
+                  // 动态加载并显示数据结构
+                  fetch('./db.json')
+                    .then(response => response.json())
+                    .then(data => {
+                      document.getElementById('data-structure').textContent = JSON.stringify(data.monthlyStatistics[0], null, 2);
+                    });
+              </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: # 如果有自定义域名，在这里设置
