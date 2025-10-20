@@ -1,0 +1,99 @@
+name: Update API Data
+
+on:
+  push:
+    branches: [main, master]
+    paths: ['db.json']
+  workflow_dispatch:
+
+jobs:
+  update-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Generate API Response
+        run: |
+          # 创建格式化的API响应
+          node -e "
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('db.json', 'utf8'));
+          const monthlyStats = data.monthlyStatistics;
+          const total = monthlyStats.length;
+
+          const wrappedResponse = {
+            data: {
+              page: {
+                total: total.toString(),
+                rows: monthlyStats
+              },
+              rows: monthlyStats.map(item => ({
+                id: item.id?.toString() || '',
+                bank_code: item.bank_code || '',
+                area_code: item.area_code || '',
+                platform_code: item.platform_code || '',
+                month: item.month || '',
+                harvestYearSum: item.harvestYearSum || '',
+                sendYearSum: item.sendYearSum || '',
+                workCardNum: item.workCardNum || '',
+                accountSum: item.accountSum || '',
+                projectSum: item.projectSum || ''
+              }))
+            }
+          };
+
+          fs.writeFileSync('api/monthlyStatistics.json', JSON.stringify(wrappedResponse, null, 2));
+          console.log('API response generated successfully');
+          "
+
+      - name: Create API directory
+        run: mkdir -p api
+
+      - name: Move generated file
+        run: |
+          if [ ! -f api/monthlyStatistics.json ]; then
+            node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('db.json', 'utf8'));
+            const monthlyStats = data.monthlyStatistics;
+            const total = monthlyStats.length;
+            
+            const wrappedResponse = {
+              data: {
+                page: {
+                  total: total.toString(),
+                  rows: monthlyStats
+                },
+                rows: monthlyStats.map(item => ({
+                  id: item.id?.toString() || '',
+                  bank_code: item.bank_code || '',
+                  area_code: item.area_code || '',
+                  platform_code: item.platform_code || '',
+                  month: item.month || '',
+                  harvestYearSum: item.harvestYearSum || '',
+                  sendYearSum: item.sendYearSum || '',
+                  workCardNum: item.workCardNum || '',
+                  accountSum: item.accountSum || '',
+                  projectSum: item.projectSum || ''
+                }))
+              }
+            };
+            
+            fs.writeFileSync('api/monthlyStatistics.json', JSON.stringify(wrappedResponse, null, 2));
+            "
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add api/monthlyStatistics.json
+          git diff --staged --quiet || git commit -m "Auto-update API data"
+          git push

@@ -4,8 +4,9 @@
 
 ## 🚀 在线访问
 
-- **API 基础地址**: `https://your-username.github.io/json-server-data`
-- **数据接口**: `https://your-username.github.io/json-server-data/monthlyStatistics`
+- **项目主页**: `https://你的GitHub用户名.github.io/json-server-data/`
+- **格式化 API**: `https://你的GitHub用户名.github.io/json-server-data/monthlyStatistics.json`
+- **原始数据**: `https://你的GitHub用户名.github.io/json-server-data/db.json`
 
 ## 📊 数据结构
 
